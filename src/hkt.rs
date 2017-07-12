@@ -1,4 +1,8 @@
 
+use std::collections::linked_list::LinkedList;
+use std::collections::vec_deque::VecDeque;
+use std::collections::{BinaryHeap, BTreeSet, HashSet};
+
 ///Encoding of higher kinded types, by capturing the type constructor, its current type parameter
 /// and the output type parameter. This encoding defines types to support the definition of operations
 /// from F<T> to F<V>.
@@ -31,7 +35,40 @@ macro_rules! hkt {
     }
 }
 
+#[macro_export]
+macro_rules! hkt_partial_left {
+    ($t:ident) => {
+        impl<T,V,E> HKT<$t<T,E>, V> for $t<T, E> {
+            type Current = T;
+            type Output = V;
+            type FOutput = $t<V, E>;
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! hkt_partial_right {
+    ($t:ident) => {
+        impl<T,V,L> HKT<$t<L,T>, V> for $t<L,T> {
+            type Current = T;
+            type Output = V;
+            type FOutput = $t<L, V>;
+        }
+    }
+}
+
+
+
+hkt!(Vec);
 hkt!(Option);
+hkt!(Box);
+hkt!(LinkedList);
+hkt!(BinaryHeap);
+hkt!(BTreeSet);
+hkt!(VecDeque);
+hkt!(HashSet);
+
+hkt_partial_left!(Result);
 
 trait Functor<F, V> : HKT<F, V>{
     fn fmap<Fun>(&self, f: Fun) -> Self::FOutput where Fun: FnOnce(&Self::Current) -> Self::Output;
