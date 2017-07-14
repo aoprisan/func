@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 use std::marker::Sized;
 
 pub trait OptionExtOps {

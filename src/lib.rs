@@ -4,8 +4,9 @@ pub mod result_ops;
 pub mod validation;
 pub mod semigroup;
 pub mod monoid;
-
-
+pub mod monad;
+pub mod functor;
+pub mod applicative;
 
 #[cfg(test)]
 mod tests {
