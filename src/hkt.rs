@@ -5,7 +5,7 @@
 /// F is the type constructor (F<_>)
 /// V is the output type inside of F.
 /// The current type inside of F is defined at implementation time.
-pub trait HKT<V> {
+pub trait HigherKindedType<V> {
     type Current; //current type in F
     type Output; // output type in F
     type FOutput; // F<Output>
@@ -23,7 +23,7 @@ pub trait HKT<V> {
 #[macro_export]
 macro_rules! hkt {
     ($t:ident) => {
-       impl<T, V> HKT<V> for $t<T> {
+       impl<T, V> HigherKindedType<V> for $t<T> {
             type Current = T;
             type Output = V;
             type FOutput = $t<V>;
@@ -34,7 +34,7 @@ macro_rules! hkt {
 #[macro_export]
 macro_rules! hkt_partial_left {
     ($t:ident) => {
-        impl<T,V,E> HKT<V> for $t<T, E> {
+        impl<T,V,E> HigherKindedType<V> for $t<T, E> {
             type Current = T;
             type Output = V;
             type FOutput = $t<V, E>;
@@ -45,7 +45,7 @@ macro_rules! hkt_partial_left {
 #[macro_export]
 macro_rules! hkt_partial_right {
     ($t:ident) => {
-        impl<T,V,L> HKT<V> for $t<L,T> {
+        impl<T,V,L> HigherKindedType<V> for $t<L,T> {
             type Current = T;
             type Output = V;
             type FOutput = $t<L, V>;
@@ -59,6 +59,8 @@ hkt!(Vec);
 hkt!(Option);
 
 hkt_partial_left!(Result);
+
+hkt!(Box);
 
 
 

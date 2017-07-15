@@ -4,6 +4,48 @@ pub trait Monoid : Semigroup {
     fn zero() -> Self::T;
 }
 
+///A macro to implement monoid for numeric semigroups
+#[macro_export]
+macro_rules! monoid_num {
+    ($t:ident, $z:expr) => {
+        impl Monoid for $t {
+            fn zero() -> Self::T {
+                $z
+            }
+        }
+    }
+}
+
+///A macro to implement monoid for Semigroups which have a new method
+#[macro_export]
+macro_rules! monoid {
+    ($t:ident) => {
+        impl<T> Monoid for $t<T> {
+            fn zero() -> Self::T {
+                $t::new()
+            }
+        }
+    }
+}
+
+//Implementation for numeric Monoids
+monoid_num!(i8, 0);
+monoid_num!(i16, 0);
+monoid_num!(i32, 0);
+monoid_num!(i64, 0);
+monoid_num!(u8, 0);
+monoid_num!(u16, 0);
+monoid_num!(u32, 0);
+monoid_num!(u64, 0);
+monoid_num!(isize, 0);
+monoid_num!(usize, 0);
+monoid_num!(f32, 0.0);
+monoid_num!(f64, 0.0);
+
+//Implementation of Monoid for Vec<T>
+monoid!(Vec);
+
+
 impl Monoid for String {
     fn zero() -> String { "".to_string() }
 }
@@ -16,12 +58,6 @@ fn test_string_monoid() {
     assert_eq!(String::zero(), "".to_string());
 }
 
-
-impl Monoid for u64 {
-    fn zero() -> u64 { 0 }
-}
-
-
 #[test]
 fn test_u64_monoid() {
 
@@ -30,11 +66,6 @@ fn test_u64_monoid() {
     assert_eq!(u64::zero(), 0);
 }
 
-impl<A> Monoid for Vec<A> {
-    fn zero() -> Self::T {
-       vec![]
-    }
-}
 
 #[test]
 fn test_vec_monoid() {

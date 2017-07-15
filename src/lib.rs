@@ -7,6 +7,7 @@ pub mod monoid;
 pub mod monad;
 pub mod functor;
 pub mod applicative;
+pub mod foldable;
 
 #[cfg(test)]
 mod tests {
