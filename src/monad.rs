@@ -28,6 +28,12 @@ impl<T,V> Monad<V> for Vec<T> {
     }
 }
 
+impl<T,V> Monad<V> for Box<T> {
+    fn bind<Fun>(&self, f: Fun) -> Self::FOutput where Fun: Fn(&Self::Current) -> Self::FOutput {
+        f(self)
+    }
+}
+
 #[test]
 pub fn test_monad_option() {
     let none: Option<u32> = None;
@@ -41,4 +47,9 @@ pub fn test_monad_result() {
     assert_eq!(Result::<u32,u32>::point(10).bind(|x| Ok(x + 1)), Ok(11));
     assert_eq!(Err(10).bind(|x| Ok(x + 1)), Err(10));
     assert_eq!(Result::<u32,u32>::point(10).bind(|_| Err(10 as u32) as Result<u32, u32>), Err(10));
+}
+
+#[test]
+pub fn test_monad_box() {
+    assert_eq!(Box::new(10 as u32).bind(|x| Box::new(x + 1)), Box::new(11));
 }

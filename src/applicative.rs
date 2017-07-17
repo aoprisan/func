@@ -72,15 +72,37 @@ impl<T,V> Applicative<V> for Vec<T> {
 }
 
 
+impl<T,V> Apply<V> for Box<T> {
+
+    fn ap<Fun>(&self, f: <Self as HigherKindedType<Fun>>::FOutput) -> <Self as HigherKindedType<V>>::FOutput where Fun: Fn(&<Self as HigherKindedType<V>>::Current) -> V {
+//        let x = *self;
+        let ff = *f;
+        Box::new(ff(self))
+    }
+
+}
+
+impl<T,V> Applicative<V> for Box<T> {
+    fn point(a: Self::Output) -> Self::FOutput {
+        Box::new(a)
+    }
+}
+
 #[test]
-fn test_option(){
+fn test_applicative_option(){
     assert_eq!(Option::<i32>::point(10), Some(10));
     assert_eq!(Some(10).ap(Some(|x: &u32| *x + 1)), Some(11));
 }
 
 #[test]
-fn test_result(){
+fn test_applicative_result(){
     assert_eq!(Vec::<i32>::point(10), vec![10]);
     assert_eq!(vec![10].ap(vec![(|x: &u32| *x + 1)]), vec![11]);
 }
 
+
+#[test]
+fn test_applicative_box(){
+    assert_eq!(Box::<i32>::point(10), Box::new(10));
+    assert_eq!(Box::new(10).ap(Box::new(|x: &u32| *x + 1)), Box::new(11));
+}

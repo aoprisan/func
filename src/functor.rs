@@ -36,6 +36,11 @@ impl<T, V, E : Clone> Functor<V> for Result<T,E> {
     }
 }
 
+impl<T, V> Functor<V> for Box<T> {
+    fn fmap<Fun>(&self, f: Fun) -> Self::FOutput where Fun: Fn(&Self::Current) -> Self::Output {
+        Box::new(f(self))
+    }
+}
 
 #[test]
 pub fn test_functor_option() {
@@ -54,4 +59,10 @@ pub fn test_functor_result() {
 #[test]
 pub fn test_functor_vec() {
     assert_eq!(vec![1,2,3].fmap(|x| x + 1), vec![2,3,4]);
+}
+
+#[test]
+pub fn test_functor_box() {
+    assert_eq!(Box::new(Some(10)).fmap(|x| x.fmap(|xx| xx + 1)), Box::new(Some(11)));
+    assert_eq!(Box::new(None).fmap(|x| x.fmap(|xx| xx + 1)), Box::new(None));
 }
