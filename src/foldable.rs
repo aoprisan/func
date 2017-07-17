@@ -25,3 +25,21 @@ foldable!(Vec);
 fn test_foldable_vec(){
     assert_eq!(vec![1,2,3].foldr(0,|x,y| x + y), 6)
 }
+
+#[test]
+fn test_foldable_vec_option() {
+    use semigroup::Semigroup;
+    use monoid::Monoid;
+    use monoid::*;
+    use semigroup::*;
+
+    assert_eq!(
+        vec![Some(1),Some(2)].foldr(Option::<i32>::zero(),|x,y| x.add_and_own(*y) ),
+        Some(3)
+    );
+
+//    assert_eq!(
+//        vec![Some(1),Some(2)].foldrr(),
+//        Some(3)
+//    )
+}

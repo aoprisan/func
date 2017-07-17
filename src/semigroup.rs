@@ -58,6 +58,28 @@ impl Semigroup for String {
     }
 }
 
+impl<A : Semigroup<T = A>> Semigroup for Option<A> {
+    type T = Option<A>;
+    fn add_and_own(self, t2: Self::T) -> Self::T {
+        match (self, t2) {
+            (Some(x), Some(y)) => Some(x.add_and_own(y)),
+            _ => None
+        }
+    }
+}
+
+
+impl<A : Semigroup<T = A>, E : Clone> Semigroup for Result<A,E> {
+    type T = Result<A,E>;
+    fn add_and_own(self, t2: Self::T) -> Self::T {
+        match (self, t2) {
+            (Ok(x), Ok(y)) => Ok(x.add_and_own(y)),
+            (Err(e), _) => Err(e),
+            (_, Err(e)) => Err(e)
+        }
+    }
+}
+
 semigroup!(Vec);
 
 impl<A: Semigroup<T = A>> Semigroup for Box<A> {
@@ -80,4 +102,11 @@ fn test_num_semigroup(){
 #[test]
 fn test_box_semigroup(){
     assert_eq!(Box::new(1).add_and_own(Box::new(2)), Box::new(3));
+}
+
+#[test]
+fn test_option_semigroup(){
+    assert_eq!(Some(1).add_and_own(Some(2)), Some(3));
+    assert_eq!(Some(1).add_and_own(None), None);
+    assert_eq!(None.add_and_own(Some(2)), None);
 }

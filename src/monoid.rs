@@ -50,6 +50,14 @@ impl Monoid for String {
     fn zero() -> String { "".to_string() }
 }
 
+impl<A : Semigroup<T = A> + Monoid> Monoid for Option<A> {
+    fn zero() -> Self::T { Some(A::zero()) }
+}
+
+impl<A : Semigroup<T = A> + Monoid, E : Clone> Monoid for Result<A,E> {
+    fn zero() -> Self::T { Ok(A::zero()) }
+}
+
 impl<A: Monoid + Semigroup<T = A>> Monoid for Box<A> {
 
     fn zero() -> Self::T {
@@ -81,4 +89,14 @@ fn test_vec_monoid() {
 #[test]
 fn test_box_monoid(){
     assert_eq!(Box::<u64>::zero(), Box::new(0));
+}
+
+#[test]
+fn test_option_monoid(){
+    assert_eq!(Option::<u64>::zero(), Some(0));
+}
+
+#[test]
+fn test_result_monoid(){
+    assert_eq!(Result::<u64, u64>::zero(), Ok(0));
 }
