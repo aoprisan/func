@@ -1,6 +1,18 @@
+use std::fmt::{Display, Formatter, Result as FmtResult, Debug};
+
 pub enum Validation<T, E> {
     VOk(T),
     VErr(Vec<E>),
+}
+
+impl<T: Display, E: Display + Debug> Display for Validation<T,E> {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        match self {
+            &Validation::VOk(ref x) => write!(f, "OK: {}", x),
+            &Validation::VErr(ref errs) => write!(f, "Errors: {:?}", errs),
+
+        }
+    }
 }
 
 impl<T,E> Validation<T,E> {
