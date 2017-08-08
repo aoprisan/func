@@ -8,6 +8,7 @@ pub mod monad;
 pub mod functor;
 pub mod applicative;
 pub mod foldable;
+pub mod hlist;
 
 #[cfg(test)]
 mod tests {
