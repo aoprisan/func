@@ -18,23 +18,60 @@ impl HList for HNil {
 
 }
 
-struct HCons<T,V> {
+struct HCons<T,V : HList> {
     pub head: T,
     pub tail: V
 }
 
-impl<T,V> HList for HCons<T,V> {
+impl<T,V : HList> HList for HCons<T,V> {
 
 }
 
+#[macro_export]
+macro_rules! hlist {
+    ( ) => { $crate::hlist::HNil } ;
+
+    ($x: expr) => { $crate::hlist::HCons { head: $x, tail: $crate::hlist::HNil } };
+
+    ($x: expr, $($y: expr),*) => { $crate::hlist::HCons { head: $x, tail: hlist![$($y),*] } };
+}
+
+
+#[macro_export]
+macro_rules! Hlist {
+    ( ) => { $crate::hlist::HNil } ;
+
+    ($x: ty) => { $crate::hlist::HCons<$x, $crate::hlist::HNil> };
+
+    ($x: ty, $($y: ty),*) => { $crate::hlist::HCons<$x, Hlist![$($y),*]> };
+}
 
 #[test]
 fn test_prepend(){
+
+    fn test_hlist_type(l: Hlist!(String, i32)) -> String {
+        l.head
+    }
+
     let list = HNil.prepend(100).prepend("string".to_string());
     assert_eq!(list.head, "string".to_string());
     assert_eq!(list.tail.head, 100);
     assert_eq!(list.tail.tail, HNil);
+
+    let mlist = hlist!["string".to_string(), 100];
+    assert_eq!(mlist.head, "string".to_string());
+    assert_eq!(mlist.tail.head, 100);
+    assert_eq!(mlist.tail.tail, HNil);
+    let mmlist: Hlist!(String,i32) = HNil.prepend(100).prepend("string".to_string());
+    assert_eq!(mmlist.head, "string".to_string());
+    assert_eq!(mmlist.tail.head, 100);
+    assert_eq!(mmlist.tail.tail, HNil);
+
+    assert_eq!(test_hlist_type(mmlist), "string".to_string());
 }
+
+
+
 
 #[derive(Debug, PartialEq)]
 pub enum EHList<T,V> {
