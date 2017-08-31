@@ -9,6 +9,7 @@ pub mod functor;
 pub mod applicative;
 pub mod foldable;
 pub mod hlist;
+pub mod show;
 
 #[cfg(test)]
 mod tests {
