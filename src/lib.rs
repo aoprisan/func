@@ -10,6 +10,7 @@ pub mod applicative;
 pub mod foldable;
 pub mod hlist;
 pub mod show;
+pub mod effect;
 
 #[cfg(test)]
 mod tests {
