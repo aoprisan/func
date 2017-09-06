@@ -12,6 +12,9 @@ pub mod hlist;
 pub mod show;
 pub mod effect;
 
+
+#[macro_use] extern crate pretty_assertions;
+
 #[cfg(test)]
 mod tests {
     #[test]

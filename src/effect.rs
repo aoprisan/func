@@ -51,6 +51,13 @@ trait IO {
         }
     }
 
+
+    fn map<F, B>(self, f: F) -> Map<Self,F> where F: FnOnce(Self::Output) -> B, Self: Sized {
+        Map {
+            sub: self,
+            k: f
+        }
+    }
 }
 
 pub struct Unit<A>{
@@ -87,10 +94,37 @@ impl<IOA: IO, IOB: IO, F: FnOnce(IOA::Output) -> IOB> IO for FlatMap<IOA,F, IOB>
     }
 }
 
+pub struct Map<IOA, F> {
+    sub: IOA,
+    k: F
+}
+
+impl<B, IOA: IO, F: FnOnce(IOA::Output) -> B> IO for Map<IOA, F> {
+    type Output = B;
+
+    fn run(self) -> Self::Output {
+        let a = self.sub.run();
+        let b = (self.k)(a);
+        b
+    }
+}
+
 #[test]
 fn test_flat_map() {
     let r = unit(10).flat_map(|x| unit(x + 10)).run();
     assert_eq!(r, 20);
+}
+
+#[test]
+fn test_map() {
+    let r = unit(10).map(|x| x + 10 ).run();
+    assert_eq!(r, 20);
+}
+
+#[test]
+fn test_map_and_flat_map() {
+    let r = unit(10).map(|x| x + 10 ).flat_map(|x| unit(x + 10)).run();
+    assert_eq!(r, 30);
 }
 
 //pub enum IO<T> {
