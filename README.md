@@ -15,4 +15,6 @@
 
   All of the above are the results of me playing around, and they're far from being usable for any serious work.
 
+  For a comprehensive list of resources on FP in Rust, visit [Rustz] (https://github.com/algermissen/rustz).
+
 
