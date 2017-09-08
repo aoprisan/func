@@ -11,6 +11,7 @@ pub mod foldable;
 pub mod hlist;
 pub mod show;
 pub mod effect;
+pub mod tailrec;
 
 
 #[macro_use] extern crate pretty_assertions;
