@@ -3,7 +3,7 @@ pub enum RecursionState<Done, Cont> {
     Done(Done)
 }
 
-trait TailRec<Output> {
+pub trait TailRec<Output> {
 
     #[inline]
     fn rec<F>(self, iterate:F) -> Output

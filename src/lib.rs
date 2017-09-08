@@ -12,6 +12,7 @@ pub mod hlist;
 pub mod show;
 pub mod effect;
 pub mod tailrec;
+pub mod trampoline;
 
 
 #[macro_use] extern crate pretty_assertions;
