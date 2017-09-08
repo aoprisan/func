@@ -1,4 +1,6 @@
 pub mod hkt;
+#[macro_use]
+pub mod lazy;
 pub mod option_ops;
 pub mod result_ops;
 pub mod validation;

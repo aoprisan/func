@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+use lazy::*;
+
 struct SimpleIO<A:Clone + Sized>{
     run_value: A
 }
@@ -77,6 +79,23 @@ pub fn unit<A>(a: A) -> Unit<A> {
     Unit { result: a }
 }
 
+pub struct Suspend<A>{
+    result: Lazy<A>
+}
+
+impl<A> IO for Suspend<A> {
+    type Output = A;
+
+    fn run(self) -> Self::Output {
+        self.result.eval()
+    }
+
+}
+
+pub fn suspend<A>(a: Lazy<A>) -> Suspend<A> {
+    Suspend { result: a }
+}
+
 pub struct FlatMap<IOA,F, IOB> {
     sub: IOA,
     k: F,
@@ -108,6 +127,7 @@ impl<B, IOA: IO, F: FnOnce(IOA::Output) -> B> IO for Map<IOA, F> {
         b
     }
 }
+
 
 #[test]
 fn test_flat_map() {
