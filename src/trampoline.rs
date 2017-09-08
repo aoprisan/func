@@ -17,6 +17,11 @@ impl<A> Lazy<A> {
     }
 }
 
+#[macro_export]
+macro_rules! lazy {
+    ($x: expr) => { $crate::trampoline::Lazy { computation: Box::new(move || { $x } ) } };
+}
+
 pub enum Computation<A> {
     Done(A),
     Continue(Lazy<Computation<A>>)
@@ -35,12 +40,12 @@ fn test_odd_even(){
 
     fn even(i: u32) -> Computation<bool> { match i {
         0 => Computation::Done(true),
-        _ => Computation::Continue(Lazy::new(move || odd(i - 1)))
+        _ => Computation::Continue(lazy!( odd(i - 1)))//Computation::Continue(Lazy::new(move || odd(i - 1)))
     }}
 
     fn odd(i: u32) -> Computation<bool> { match i {
         0 => Computation::Done(false),
-        _ => Computation::Continue(Lazy::new(move || even(i - 1)))
+        _ => Computation::Continue(lazy!(even(i - 1))) //Computation::Continue(Lazy::new(move || even(i - 1)))
     }}
 
     assert_eq!(run(even(3000)), true);
