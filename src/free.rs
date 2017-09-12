@@ -3,6 +3,19 @@ use tailrec::TailRec;
 
 use lazy::*;
 use std::rc::Rc;
+use std::mem::*;
+
+//pub enum ETFree<A> {
+//    Return(A),
+//    Suspend(Lazy<A>),
+//    FlatMap(Box<ETFree<*const u8>>, Rc<Fn(*const u8) -> ETFree<A> >)
+//}
+//
+//fn magick_lhs<A: 'static>(free: ETFree<A>) -> ETFree<*const u8> { match free {
+//    ETFree::Return(a) => ETFree::Return( unsafe { transmute( Box::new(a) ) } ),
+//    ETFree::Suspend(a) => ETFree::Suspend( lazy![ unsafe { transmute( Box::new(a) ) } ] ),
+//    ETFree::FlatMap(m, k) => ETFree::FlatMap( m, Rc::new( move |x| magick_lhs( k(x) ) ) )
+//}}
 
 pub enum Free<A> {
     Return(A),
@@ -11,7 +24,10 @@ pub enum Free<A> {
 // Rc required as Box cannot be moved into Fn
 //    FlatMap(Free<A>, Box<Fn(A) -> Free<A> >)
     FlatMap(Box<Free<A>>, Rc<Fn(A) -> Free<A> >)
+//    FlatMap(Box<Free<*const u8>>, Rc<Fn(*const u8) -> Free<A> >)
 }
+
+
 
 impl<A> Free<A> {
     fn flat_map_rc(self, f: Rc<Fn(A) -> Free<A>>) -> Free<A>   {
