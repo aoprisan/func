@@ -36,6 +36,19 @@ pub trait TailRec<Output> {
 
 impl<T,Output> TailRec<Output> for T {}
 
+#[inline]
+pub fn tail_rec<Input, Output, F>(input: Input, iterate:F) -> Output
+    where Input: Sized, F: Fn(Input) -> RecursionState<Output, Input> {
+
+    let mut state = iterate(input);
+
+    loop {
+        match state {
+            RecursionState::Done(output) => return output,
+            RecursionState::Continue(more) => state = iterate(more)
+        }
+    }
+}
 
 #[test]
 fn test_tail_rec() {
@@ -52,6 +65,16 @@ fn test_tail_rec_ref() {
     let r = 10.rec_ref(|x| match x {
         &0 => RecursionState::Done( () ),
         &k => RecursionState::Continue( k -1 )
+    });
+
+    assert_eq!(r, ());
+}
+
+#[test]
+fn test_tail_rec_as_func() {
+    let r = tail_rec(10, |x| match x {
+        0 => RecursionState::Done( () ),
+        k => RecursionState::Continue( k -1 )
     });
 
     assert_eq!(r, ());

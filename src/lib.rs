@@ -1,6 +1,5 @@
 pub mod hkt;
-#[macro_use]
-pub mod lazy;
+#[macro_use] pub mod lazy;
 pub mod option_ops;
 pub mod result_ops;
 pub mod validation;
@@ -15,6 +14,7 @@ pub mod show;
 pub mod effect;
 pub mod tailrec;
 pub mod trampoline;
+pub mod free;
 
 
 #[macro_use] extern crate pretty_assertions;
