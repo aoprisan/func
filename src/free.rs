@@ -82,12 +82,5 @@ fn test_free(){
     });
 
     assert_eq!(run(deepf), 49995010);
-
-//        let debug = (1..5).fold(free_return(10),|free, elem| {
-//            free.flat_map(move |x| free_suspend(lazy!(x + elem)) )
-//        });
-//
-//        assert_eq!(run(debug), 20);
-
 }
 
