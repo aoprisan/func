@@ -147,6 +147,96 @@ fn test_map_and_flat_map() {
     assert_eq!(r, 30);
 }
 
+#[test]
+fn test_suspend_map_and_flat_map() {
+    let r = suspend(lazy!(10)).map(|x| x + 10 ).flat_map(|x| unit(x + 10)).run();
+    assert_eq!(r, 30);
+}
+
+
+//type F<A> = Fn() -> A;
+//
+//enum Free<A> {
+//    Pure(A),
+//    Roll(Box<F<Free<A>>>),
+//    Bind(Box<Free<*const u8>>, Box<Fn(*const u8) -> Free<A>>),
+//}
+//
+//impl<'a,A> Free<A> {
+//    #[inline]
+//    fn resume(self) -> Result<A,F<Free<A>>> {
+//        match self {
+//            Free::Pure(val) => Ok (val),
+//            Free::Roll(thk) => Err(thk),
+//            Free::Bind(mon2, con2) => {
+//                match mon2 {
+//                    Free::Pure(val) => con2(val).resume(),
+//                    Free::Roll(thk1) => {
+//                        Err({
+//                            // FIXME: Without the annotation, rustc thinks we
+//                            // need a Send bound. Maybe report upstream?
+//                            let thk2: F<Free<A>> = || {
+//                                Free::Bind(Box::new(thk1()), con2)
+//                            };
+//                            thk2
+//                        })
+//                    },
+//                    Free::Bind(bmon1, con1) => {
+//                        Free::Bind(bmon1, |ptr1|
+//                            Free::Bind(Box::new(con1(ptr1)), con2))
+//                        .resume()
+//                    },
+//                }
+//            },
+//        }
+//    }
+//
+//    #[inline]
+//    fn go<FN>(mut self, f:FN) -> A where FN: Fn(F<Free<A>>) -> Free<A>{
+//        let res: A;
+//        loop { match self.resume() {
+//            Ok (val) => { res  = val; break },
+//            Err(cmp) => { self = f(cmp)     },
+//        }};
+//        res
+//    }
+//
+//
+//    #[inline]
+//    fn run(self) -> A {
+//        self.go(force)
+//    }
+//}
+
+//#[inline(always)]
+//fn coe_m<'a,A>(t:Trampoline<'a,A>) -> Free<'a,*const u8> {
+//    let Trampoline(m) = t;
+//    match m {
+//        Pure(a) => Pure(unsafe { transmute(box a) }),
+//        Roll(k) => Roll(proc() coe_m(Trampoline(k()))),
+//        Bind(m,f) => Bind(m, proc(x) coe_m(Trampoline(f(x)))),
+//    }
+//}
+//
+//#[inline(always)]
+//fn coe_f<'a,A,B>(k:proc(A):'a -> Trampoline<'a,B>) -> proc(*const u8):'a -> Free<'a,B> {
+//proc(x) {
+//let box a: Box<A> = unsafe { transmute(x) };
+//let Trampoline(mb) = k(a);
+//mb
+//}
+//}
+
+//// Public API
+//
+//pub type Thunk<A> = Fn()-> A;
+//
+//#[inline(always)]
+//pub fn force<'a,A>(k:Thunk<A>) -> A {
+//    k()
+//}
+
+
 //pub enum IO<T> {
 //    Pure(T),
 //    Suspend(Box<Fn() -> T>),
