@@ -2,50 +2,49 @@ use tailrec::*;
 use tailrec::TailRec;
 
 use lazy::*;
+use std::rc::Rc;
 
 pub enum Free<A> {
     Return(A),
     Suspend(Lazy<A>),
 // Need a Box on first Free as it's recursive without indirection
+// Rc required as Box cannot be moved into Fn
 //    FlatMap(Free<A>, Box<Fn(A) -> Free<A> >)
-//    FlatMap(Box<Free<A>>, Box<FnOnce(A) -> Free<A> >)
+    FlatMap(Box<Free<A>>, Rc<Fn(A) -> Free<A> >)
 }
 
 impl<A> Free<A> {
-//    fn flat_map(self, f: Box<FnOnce(A) -> Free<A>>) -> Free<A>   {
-//        Free::FlatMap(Box::new(self), f)
-//    }
+    fn flat_map(self, f: Rc<Fn(A) -> Free<A>>) -> Free<A>   {
+        Free::FlatMap(Box::new(self), f)
+    }
 }
 
 pub fn run<A: 'static>(c: Free<A>) -> A {
     tail_rec(c, |free| match free {
         Free::Return(a) => RecursionState::Done(a),
-        Free::Suspend(a) => RecursionState::Done(a.eval())
+        Free::Suspend(a) => RecursionState::Done(a.eval()),
+        Free::FlatMap(free, k) => {
+            let f = *free;
+            match f {
+                Free::Return(a) => RecursionState::Continue(k(a)),
+                Free::Suspend(a) => RecursionState::Continue(k(a.eval())),
+                Free::FlatMap(free2, k2) => {
+                    RecursionState::Continue(
+                        free2.flat_map(
+                            Rc::new( move |a| k2(a).flat_map(k.clone()))
+                        )
+                    )
+                }
+            }
+
+        }
     })
 }
 
-//pub fn run<A: 'static>(c: Free<A>) -> A {
-//    c.rec(|comp|{ match comp {
-//        Free::Return(value) => RecursionState::Done(value),
-//        Free::Suspend(la) => RecursionState::Done(la.eval()),
-//        Free::FlatMap(comp, k) => match *comp {
-//            Free::Return(value) => {
-//                let xxx = (k)(value);
-//                RecursionState::Continue(xxx)
-//            },
-//            Free::Suspend(la) => RecursionState::Continue(k(la.eval())),
-//            Free::FlatMap(comp2, k2) => {
-////                let kkcomp: Free<A> = *comp2;
-////                let kkk: Box<FnMut(A) -> Free<A>> = Box::new(move |a| k2(a).flat_map(k));
-////                RecursionState::Continue(kkcomp.flat_map(kkk))
-//                RecursionState::Continue(*comp2)
-//            }
-//        }
-//    }})
-//}
 
 #[test]
-fn test_odd_even(){
-
+fn test_free(){
+    let x = Free::Return(10).flat_map(Rc::new(|x| Free::Suspend(lazy!( x + 100 ))));
+    assert_eq!(run(x), 110);
 }
 
