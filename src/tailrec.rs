@@ -72,7 +72,7 @@ fn test_tail_rec_ref() {
 
 #[test]
 fn test_tail_rec_as_func() {
-    let r = tail_rec(10, |x| match x {
+    let r = tail_rec(10000, |x| match x {
         0 => RecursionState::Done( () ),
         k => RecursionState::Continue( k -1 )
     });

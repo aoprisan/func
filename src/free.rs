@@ -14,8 +14,12 @@ pub enum Free<A> {
 }
 
 impl<A> Free<A> {
-    fn flat_map(self, f: Rc<Fn(A) -> Free<A>>) -> Free<A>   {
+    fn flat_map_rc(self, f: Rc<Fn(A) -> Free<A>>) -> Free<A>   {
         Free::FlatMap(Box::new(self), f)
+    }
+
+    fn flat_map<F>(self, f: F) -> Free<A> where F: Fn(A) -> Free<A> + 'static  {
+        self.flat_map_rc(Rc::new(f))
     }
 }
 
@@ -30,8 +34,8 @@ pub fn run<A: 'static>(c: Free<A>) -> A {
                 Free::Suspend(a) => RecursionState::Continue(k(a.eval())),
                 Free::FlatMap(free2, k2) => {
                     RecursionState::Continue(
-                        free2.flat_map(
-                            Rc::new( move |a| k2(a).flat_map(k.clone()))
+                        free2.flat_map_rc(
+                            Rc::new( move |a| k2(a).flat_map_rc(k.clone()))
                         )
                     )
                 }
@@ -41,10 +45,33 @@ pub fn run<A: 'static>(c: Free<A>) -> A {
     })
 }
 
+pub fn free_return<A>(a:A) -> Free<A> {
+    Free::Return(a)
+}
+
+pub fn free_suspend<A>(a: Lazy<A>) -> Free<A> {
+    Free::Suspend(a)
+}
 
 #[test]
 fn test_free(){
-    let x = Free::Return(10).flat_map(Rc::new(|x| Free::Suspend(lazy!( x + 100 ))));
+    let x = free_return(10).flat_map(|x| free_suspend(lazy!( x + 100 )));
     assert_eq!(run(x), 110);
+
+
+    let deep_size = 10000; //10000000
+
+    let deepf = (1..deep_size).fold(free_return(10),|free, elem| {
+        free.flat_map(move |x| free_suspend(lazy!(x + elem)) )
+    });
+
+    assert_eq!(run(deepf), 49995010);
+
+//        let debug = (1..5).fold(free_return(10),|free, elem| {
+//            free.flat_map(move |x| free_suspend(lazy!(x + elem)) )
+//        });
+//
+//        assert_eq!(run(debug), 20);
+
 }
 
