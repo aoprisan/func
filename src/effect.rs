@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
 use lazy::*;
+use std::fmt::Debug;
+use std::marker::Sized;
 
 struct SimpleIO<A:Clone + Sized>{
     run_value: A
@@ -128,6 +130,89 @@ impl<B, IOA: IO, F: FnOnce(IOA::Output) -> B> IO for Map<IOA, F> {
     }
 }
 
+
+//http://degoes.net/articles/only-one-io
+
+//struct Async<A,E> {
+//    register: Box<
+//        Fn(
+//            Box< Fn(Result<A,E>) -> Box< IO< Output = ()>>>
+//        ) -> Box<IO<Output = ()>>
+//    >
+//}
+//
+//impl<A: 'static, E: 'static> Async<A,E> {
+//    pub fn map<B: 'static, F: Fn(A) -> B + 'static >(self, ab: F) -> Async<B, E> {
+//
+//        Async {
+//            register: Box::new(move |cb| {
+//                let call = cb;
+//                (self.register)(Box::new(move |res| {
+//                    match res {
+//                        Err(e) => call(Err(e)),
+//                        Ok(a) => call(Ok(ab(a)))
+//                    }
+//                }))
+//            })
+//        }
+//    }
+//}
+
+
+//Playing with Generics, it doesn't compile, as it does not allow me to
+// 'let tmp2: FB = move |cb: FIB | {...}' assign a closure to variable of a trait type
+
+//trait Async {
+//    type Output;
+//    type O1;
+//
+//    fn map<Fun: Fn(Self::Output) -> Self::O1 >(self: Self, ab: Fun) -> Self;
+//}
+//
+//struct AsyncContainer<A, E, F, FI, B, FIB, FB> {
+//    register: F,
+//    ghost1: PhantomData<A>,
+//    ghost2: PhantomData<E>,
+//    ghost3: PhantomData<FI>,
+//    ghost4: PhantomData<B>,
+//    ghost5: PhantomData<FIB>,
+//    ghost6: PhantomData<FB>
+//}
+//
+//impl<
+//    A,E: Debug, B,
+//    IOUnit: IO<Output = ()>,
+//    FI: Fn(Result<A, E>) -> IOUnit,
+//    FIB: Fn(Result<B, E>) -> IOUnit,
+//    F: Fn(FI) -> IOUnit,
+//    FB: Fn(FI) -> IOUnit,
+//> Async for AsyncContainer<A, E, F, FI, B, FIB, FB> {
+//
+//    type Output = A;
+//    type O1 = B;
+//
+//    fn map<Fun: Fn(Self::Output) -> Self::O1 >(self, ab: Fun) -> Self {
+//        let tmp2: FB = move |cb: FIB | {
+//            let tmp = |res: Result<A,E>| {
+//                match res {
+//                    Err(e) => cb(Err(e)),
+//                    Ok(a) => cb(Ok(ab(a)))
+//                }
+//            };
+//            (self.register)(tmp)
+//        };
+//        AsyncContainer {
+//            register: tmp2,
+//
+//            ghost1: PhantomData,
+//            ghost2: PhantomData,
+//            ghost3: PhantomData,
+//            ghost4: PhantomData,
+//            ghost5: PhantomData,
+//            ghost6: PhantomData
+//        }
+//    }
+//}
 
 #[test]
 fn test_flat_map() {
