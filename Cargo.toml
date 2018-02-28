@@ -3,5 +3,5 @@ name = "func"
 version = "0.1.0"
 authors = ["Andrei Oprisan <oprisan@eloquentix.com>"]
 
-[dependencies]
+[dev-dependencies]
 pretty_assertions = "*"

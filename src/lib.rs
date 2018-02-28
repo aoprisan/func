@@ -16,8 +16,9 @@ pub mod tailrec;
 pub mod trampoline;
 pub mod free;
 
-
-#[macro_use] extern crate pretty_assertions;
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
 
 #[cfg(test)]
 mod tests {
