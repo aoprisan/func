@@ -15,6 +15,7 @@ pub mod effect;
 pub mod tailrec;
 pub mod trampoline;
 pub mod free;
+pub mod io;
 
 #[cfg(test)]
 #[macro_use]

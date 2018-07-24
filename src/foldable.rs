@@ -37,3 +37,38 @@ fn test_foldable_vec_option() {
     );
 
 }
+
+//use hkt::HigherKindedType;
+//
+//pub fn sequence<R: Clone,
+//    E: Clone,
+//    V: Foldable + HigherKindedType<Result<R, E>>
+//    >(vs: V) -> Result<Vec<R>, Vec<E>> {
+//
+//    vs.iter().fold(Ok(vec![]), |acc, v| {
+//        match (acc, v.clone()) {
+//            (Err(mut ess), Err(e2)) => {
+//                ess.push(e2.clone());
+//                Err(ess)
+//            },
+//            (Err(e), Ok(_)) => Err(e),
+//            (Ok(_), Err(e)) => Err(vec![e.clone()]),
+//            (Ok(mut vss), Ok(ok2)) => {
+//                vss.push(ok2.clone());
+//                Ok(vss)
+//            },
+//        }
+//    })
+//}
+//
+//#[test]
+//fn test_sequence_generic() {
+//    let pass: Vec<Result<u32,String>> = vec![Ok(1), Ok(2)];
+//    assert_eq!( sequence(pass),  Ok(vec![1,2]) );
+//
+//    let err1: Vec<Result<u32,String>> = vec![Ok(1), Ok(2), Err("error".to_string())];
+//    assert_eq!( sequence(err1),  Err(vec!["error".to_string()]) );
+//
+//    let err2: Vec<Result<u32,String>> = vec![Ok(1), Ok(2), Err("error".to_string()), Err("error2".to_string())];
+//    assert_eq!( sequence(err2),  Err(vec!["error".to_string(), "error2".to_string()]) );
+//}
