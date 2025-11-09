@@ -1,4 +1,4 @@
-use semigroup::*;
+use crate::semigroup::*;
 
 pub trait Monoid : Semigroup {
     fn zero() -> Self::T;

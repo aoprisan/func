@@ -1,5 +1,5 @@
 pub struct Lazy<A> {
-    pub computation: Box<Fn() -> A>
+    pub computation: Box<dyn Fn() -> A>
 }
 
 impl<A> Lazy<A> {

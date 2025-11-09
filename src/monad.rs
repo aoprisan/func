@@ -1,4 +1,4 @@
-use applicative::*;
+use crate::applicative::*;
 
 pub trait Monad<V> : Applicative<V>{
     fn bind<Fun>(&self, f: Fun) -> Self::FOutput where Fun: Fn(&Self::Current) -> Self::FOutput;

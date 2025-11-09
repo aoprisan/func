@@ -1,4 +1,4 @@
-use hkt::*;
+use crate::hkt::*;
 
 pub trait Functor<V> : HigherKindedType<V>{
     fn fmap<Fun>(&self, f: Fun) -> Self::FOutput where Fun: Fn(&Self::Current) -> Self::Output;
@@ -50,7 +50,7 @@ pub fn test_functor_option() {
 
 #[test]
 pub fn test_functor_result() {
-    use result_ops::*;
+    use crate::result_ops::*;
 
     assert_eq!(10.to_ok::<i32>().fmap(|x| x + 1), Ok(11));
     assert_eq!(10.to_err::<i32>().fmap(|x| x + 1), Err(10));

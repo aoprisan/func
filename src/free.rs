@@ -1,9 +1,7 @@
-use tailrec::*;
-use tailrec::TailRec;
+use crate::tailrec::*;
 
-use lazy::*;
+use crate::lazy::*;
 use std::rc::Rc;
-use std::mem::*;
 
 //pub enum ETFree<A> {
 //    Return(A),
@@ -23,14 +21,14 @@ pub enum Free<A> {
 // Need a Box on first Free as it's recursive without indirection
 // Rc required as Box cannot be moved into Fn
 //    FlatMap(Free<A>, Box<Fn(A) -> Free<A> >)
-    FlatMap(Box<Free<A>>, Rc<Fn(A) -> Free<A> >)
+    FlatMap(Box<Free<A>>, Rc<dyn Fn(A) -> Free<A> >)
 //    FlatMap(Box<Free<*const u8>>, Rc<Fn(*const u8) -> Free<A> >)
 }
 
 
 
 impl<A> Free<A> {
-    fn flat_map_rc(self, f: Rc<Fn(A) -> Free<A>>) -> Free<A>   {
+    fn flat_map_rc(self, f: Rc<dyn Fn(A) -> Free<A>>) -> Free<A>   {
         Free::FlatMap(Box::new(self), f)
     }
 

@@ -28,8 +28,8 @@ fn test_foldable_vec(){
 
 #[test]
 fn test_foldable_vec_option() {
-    use semigroup::Semigroup;
-    use monoid::Monoid;
+    use crate::semigroup::Semigroup;
+    use crate::monoid::Monoid;
 
     assert_eq!(
         vec![Some(1),Some(2)].foldr(Option::<i32>::zero(),|x,y| x.add_and_own(*y) ),
