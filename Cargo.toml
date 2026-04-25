@@ -2,6 +2,7 @@
 name = "func"
 version = "0.1.0"
 authors = ["Andrei Oprisan <oprisan@eloquentix.com>"]
+edition = "2024"
 
 [dev-dependencies]
-pretty_assertions = "*"
+pretty_assertions = "1"

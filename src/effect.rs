@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use lazy::*;
-use std::fmt::Debug;
-use std::marker::Sized;
+use crate::lazy::*;
 
 struct SimpleIO<A:Clone + Sized>{
     run_value: A

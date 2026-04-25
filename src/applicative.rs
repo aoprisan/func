@@ -1,5 +1,5 @@
-use hkt::*;
-use functor::*;
+use crate::hkt::*;
+use crate::functor::*;
 
 /// <Self as HKT<Fun>>::FOutput === F[Fun]
 /// <Self as HKT<V>>::FOutput === F[V]

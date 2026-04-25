@@ -1,7 +1,6 @@
-use tailrec::*;
-use tailrec::TailRec;
+use crate::tailrec::*;
 
-use lazy::*;
+use crate::lazy::*;
 
 pub enum Computation<A> {
     Done(A),

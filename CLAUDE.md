@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `func` is an experimental Rust library exploring functional programming abstractions (HKT emulation, Functor/Applicative/Monad, HList, Free/Trampoline, IO/Effect, Validation, TailRec). It is a personal playground — code is intentionally exploratory, includes commented-out experiments (notably the `Async` attempts in `src/effect.rs` and `ETFree` in `src/free.rs`), and is not intended for production use. README explicitly inspired by Rustz, Kinder, Frunk, tailrec.rs, and hlist.
 
-The crate has no edition specified in `Cargo.toml`, so it uses the Rust **2015 edition** — this affects module imports (e.g. `use hkt::*;` rather than `use crate::hkt::*;`) and `extern crate` is still required (see `lib.rs` for `pretty_assertions`). Keep this in mind when adding/editing code.
+The crate is on Rust **edition 2024**. Intra-crate module paths must be `crate::`-prefixed (e.g. `use crate::hkt::*;`, never `use hkt::*;`). Trait objects must use the `dyn` keyword (`Box<dyn Fn() -> A>`, `Rc<dyn Fn(A) -> Free<A>>`). The crate-wide `assert_eq!` shadowing from `pretty_assertions` is wired up via `#[macro_use] extern crate pretty_assertions;` in `lib.rs` — that older form still works in edition 2024 and is preserved intentionally so individual test modules don't need to re-import it.
 
 ## Common commands
 
@@ -16,7 +16,7 @@ The crate has no edition specified in `Cargo.toml`, so it uses the Rust **2015 e
 - Run a single test: `cargo test <test_fn_name>` (e.g. `cargo test test_free`)
 - Show test output: `cargo test -- --nocapture`
 
-There is no separate lint/format config — use `cargo clippy` and `cargo fmt` if needed. The only dev-dependency is `pretty_assertions` (wildcard version).
+There is no separate lint/format config — use `cargo clippy` and `cargo fmt` if needed. The only dev-dependency is `pretty_assertions ^1`. A clean build emits ~16 `dead_code` warnings on private items (e.g. `SimpleIO`, `HList`/`HNil`/`HCons`, `Show`, `IOError`) that are referenced only from `#[test]` blocks; these are pre-existing and intentional — do not "fix" them by deleting the code.
 
 ## Architecture
 
@@ -31,9 +31,9 @@ The crate is a flat collection of modules in `src/` re-exported from `src/lib.rs
 3. **Algebraic structures.** `semigroup.rs` defines `Semigroup` with `add_and_own` (consuming combine); `semigroup_num!` covers all numeric primitives, `semigroup!` covers `Extend`-able collections. `monoid.rs` builds on it. `foldable.rs` provides `Foldable` using these.
 
 4. **Effects / stack-safety stack.** This is the most subtle area:
-   - `lazy.rs` — `Lazy<A>` wraps `Box<Fn() -> A>` with `map`/`flat_map`. The `lazy!` macro is the canonical constructor.
+   - `lazy.rs` — `Lazy<A>` wraps `Box<dyn Fn() -> A>` with `map`/`flat_map`. The `lazy!` macro is the canonical constructor.
    - `trampoline.rs` and `tailrec.rs` — both implement looped recursion. `TailRec` is a blanket-impl trait giving every `T` a `.rec(...)` method; `tail_rec(input, iterate)` is the free-function form. Use these instead of recursion for stack safety.
-   - `free.rs` — `Free<A>` enum (`Return | Suspend | FlatMap`) interpreted via `tail_rec`. Same-type-only (`Free<A>` not `Free<F,A>`) — the commented `ETFree` block shows an abandoned attempt at type-changing `FlatMap` via `transmute`. The `FlatMap` arm uses `Rc<Fn>` (not `Box`) because `Box<Fn>` cannot be cloned out of the closure during the associativity rewrite in `run`.
+   - `free.rs` — `Free<A>` enum (`Return | Suspend | FlatMap`) interpreted via `tail_rec`. Same-type-only (`Free<A>` not `Free<F,A>`) — the commented `ETFree` block shows an abandoned attempt at type-changing `FlatMap` via `transmute`. The `FlatMap` arm uses `Rc<dyn Fn>` (not `Box<dyn Fn>`) because the associativity rewrite in `run` needs to clone the continuation into a new closure.
    - `effect.rs` — Two parallel IO designs coexist: a simple eager `SimpleIO` (private), and a lazy `IO` trait with `Unit`/`Suspend`/`Map`/`FlatMap` ADT-style structs. The large commented-out `Async` blocks document a stuck attempt at an asynchronous IO referenced from http://degoes.net/articles/only-one-io — leave them as-is unless explicitly asked to revisit.
    - `io.rs` — minimal early sketch.
 
