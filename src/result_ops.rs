@@ -23,9 +23,9 @@ pub trait ResultOps<T,V,E> {
 
 impl<T,V,E> ResultOps<T,V,E> for Result<T,E> {
     fn fold<F, FE>(&self, z: FE, nz: F) -> V where F: FnOnce(&T)-> V, FE: FnOnce(&E)-> V {
-        match self.as_ref() {
-            Ok(ref x) => nz(x),
-            Err(ref e) => z(e)
+        match self {
+            Ok(x) => nz(x),
+            Err(e) => z(e),
         }
     }
 }

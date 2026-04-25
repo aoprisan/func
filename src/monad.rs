@@ -6,8 +6,8 @@ pub trait Monad<V> : Applicative<V>{
 
 impl<T,V> Monad<V> for Option<T> {
     fn bind<Fun>(&self, f: Fun) -> Self::FOutput where Fun: Fn(&Self::Current) -> Self::FOutput {
-        match *self {
-            Some(ref v) => f(v),
+        match self {
+            Some(v) => f(v),
             None => None,
         }
     }
@@ -15,9 +15,9 @@ impl<T,V> Monad<V> for Option<T> {
 
 impl<T,V,E: Clone> Monad<V> for Result<T, E> {
     fn bind<Fun>(&self, f: Fun) -> Self::FOutput where Fun: Fn(&Self::Current) -> Self::FOutput {
-        match *self {
-            Ok(ref v) => f(v),
-            Err(ref e) => Err(e.clone()),
+        match self {
+            Ok(v) => f(v),
+            Err(e) => Err(e.clone()),
         }
     }
 }

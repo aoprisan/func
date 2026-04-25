@@ -2,26 +2,28 @@ use std::marker::PhantomData;
 
 use crate::lazy::*;
 
-struct SimpleIO<A:Clone + Sized>{
-    run_value: A
+#[allow(dead_code)]
+struct SimpleIO<A: Clone> {
+    run_value: A,
 }
 
-impl<A:Clone> SimpleIO<A> {
+#[allow(dead_code)]
+impl<A: Clone> SimpleIO<A> {
 
     pub fn run(&self) -> A {
         self.run_value.clone()
     }
 
-    pub fn map<B: Clone + Sized, Fun: FnOnce(&A) -> B>(&self, f: Fun) -> SimpleIO<B> {
+    pub fn map<B: Clone, Fun: FnOnce(&A) -> B>(&self, f: Fun) -> SimpleIO<B> {
         SimpleIO { run_value: f(&self.run()) }
     }
 
-    pub fn flat_map<B: Clone + Sized, Fun: FnOnce(&A) -> SimpleIO<B>>(&self, f: Fun) -> SimpleIO<B> {
+    pub fn flat_map<B: Clone, Fun: FnOnce(&A) -> SimpleIO<B>>(&self, f: Fun) -> SimpleIO<B> {
         SimpleIO { run_value: f(&self.run()).run() }
     }
 
-    pub fn unit(a:A) -> SimpleIO<A> {
-        SimpleIO { run_value: a}
+    pub fn unit(a: A) -> SimpleIO<A> {
+        SimpleIO { run_value: a }
     }
 
 }
@@ -39,31 +41,29 @@ fn test_io_pure() {
     assert_eq!(io_pure.run(), 40);
 }
 
+#[allow(dead_code)]
 trait IO {
 
     type Output;
 
     fn run(self) -> Self::Output;
 
-    fn flat_map<F, IOB: IO >(self, f: F) -> FlatMap<Self,F, IOB> where F: FnOnce(Self::Output) -> IOB, Self: Sized {
-        FlatMap {
-            sub: self,
-            k: f,
-            ghost: PhantomData
-        }
+    fn flat_map<F, IOB: IO>(self, f: F) -> FlatMap<Self, F, IOB>
+        where F: FnOnce(Self::Output) -> IOB, Self: Sized
+    {
+        FlatMap { sub: self, k: f, ghost: PhantomData }
     }
 
-
-    fn map<F, B>(self, f: F) -> Map<Self,F> where F: FnOnce(Self::Output) -> B, Self: Sized {
-        Map {
-            sub: self,
-            k: f
-        }
+    fn map<F, B>(self, f: F) -> Map<Self, F>
+        where F: FnOnce(Self::Output) -> B, Self: Sized
+    {
+        Map { sub: self, k: f }
     }
 }
 
-pub struct Unit<A>{
-    result: A
+pub struct Unit<A> {
+    #[allow(dead_code)]
+    result: A,
 }
 
 impl<A> IO for Unit<A> {
@@ -79,8 +79,9 @@ pub fn unit<A>(a: A) -> Unit<A> {
     Unit { result: a }
 }
 
-pub struct Suspend<A>{
-    result: Lazy<A>
+pub struct Suspend<A> {
+    #[allow(dead_code)]
+    result: Lazy<A>,
 }
 
 impl<A> IO for Suspend<A> {
@@ -96,35 +97,34 @@ pub fn suspend<A>(a: Lazy<A>) -> Suspend<A> {
     Suspend { result: a }
 }
 
-pub struct FlatMap<IOA,F, IOB> {
+pub struct FlatMap<IOA, F, IOB> {
+    #[allow(dead_code)]
     sub: IOA,
+    #[allow(dead_code)]
     k: F,
-    ghost: PhantomData<IOB>
+    ghost: PhantomData<IOB>,
 }
 
-impl<IOA: IO, IOB: IO, F: FnOnce(IOA::Output) -> IOB> IO for FlatMap<IOA,F, IOB> {
+impl<IOA: IO, IOB: IO, F: FnOnce(IOA::Output) -> IOB> IO for FlatMap<IOA, F, IOB> {
     type Output = IOB::Output;
 
     fn run(self) -> Self::Output {
-        let a = self.sub.run();
-        let iob = (self.k)(a);
-        iob.run()
-
+        (self.k)(self.sub.run()).run()
     }
 }
 
 pub struct Map<IOA, F> {
+    #[allow(dead_code)]
     sub: IOA,
-    k: F
+    #[allow(dead_code)]
+    k: F,
 }
 
 impl<B, IOA: IO, F: FnOnce(IOA::Output) -> B> IO for Map<IOA, F> {
     type Output = B;
 
     fn run(self) -> Self::Output {
-        let a = self.sub.run();
-        let b = (self.k)(a);
-        b
+        (self.k)(self.sub.run())
     }
 }
 

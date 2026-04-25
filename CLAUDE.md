@@ -16,7 +16,7 @@ The crate is on Rust **edition 2024**. Intra-crate module paths must be `crate::
 - Run a single test: `cargo test <test_fn_name>` (e.g. `cargo test test_free`)
 - Show test output: `cargo test -- --nocapture`
 
-There is no separate lint/format config — use `cargo clippy` and `cargo fmt` if needed. The only dev-dependency is `pretty_assertions ^1`. A clean build emits ~16 `dead_code` warnings on private items (e.g. `SimpleIO`, `HList`/`HNil`/`HCons`, `Show`, `IOError`) that are referenced only from `#[test]` blocks; these are pre-existing and intentional — do not "fix" them by deleting the code.
+There is no separate lint/format config — use `cargo clippy` and `cargo fmt` if needed. The only dev-dependency is `pretty_assertions ^1`. The lib build is warning-free; the test build still emits ~4 `unused_allocation` warnings on `assert_eq!(..., Box::new(x))` lines in `monad.rs`/`functor.rs`/`applicative.rs`. They're spurious (the Box is the value being compared) — leave them. Several intentionally-unused items (`SimpleIO`, the `IO` trait in `effect.rs`, the `IO` struct in `io.rs`, `Show`/`ShowDebug`, `Free::flat_map`) are kept alive only by their `#[test]` blocks and carry explicit `#[allow(dead_code)]`/module-level `#![allow(dead_code)]` annotations — preserve those when editing.
 
 ## Architecture
 
@@ -37,7 +37,7 @@ The crate is a flat collection of modules in `src/` re-exported from `src/lib.rs
    - `effect.rs` — Two parallel IO designs coexist: a simple eager `SimpleIO` (private), and a lazy `IO` trait with `Unit`/`Suspend`/`Map`/`FlatMap` ADT-style structs. The large commented-out `Async` blocks document a stuck attempt at an asynchronous IO referenced from http://degoes.net/articles/only-one-io — leave them as-is unless explicitly asked to revisit.
    - `io.rs` — minimal early sketch.
 
-5. **HList** (`hlist.rs`) — two parallel encodings: the type-level `HCons<T, V: HList>` / `HNil` (with `hlist![...]` value macro and `Hlist![...]` type macro), and a simpler runtime `EHList<T,V>` enum. Both are kept; pick the type-level one for compile-time-known shapes.
+5. **HList** (`hlist.rs`) — two parallel encodings: the type-level `pub HCons<T, V: HList>` / `pub HNil` (with `hlist![...]` value macro and `Hlist![...]` type macro), and a simpler runtime `EHList<T,V>` enum. The type-level types are `pub` because the `#[macro_export]`ed macros expand to `$crate::hlist::HCons`/`HNil` — leave them `pub` even if they appear unused locally. Both encodings are kept; pick the type-level one for compile-time-known shapes.
 
 6. **Validation** (`validation.rs`) — `Validation<T,E>` accumulates errors as `Vec<E>` via `append`, unlike `Result` which short-circuits. Has its own `map`/`and_then`/`map_err`; not yet integrated with the typeclass hierarchy.
 

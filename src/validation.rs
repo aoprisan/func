@@ -8,9 +8,8 @@ pub enum Validation<T, E> {
 impl<T: Display, E: Display + Debug> Display for Validation<T,E> {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         match self {
-            &Validation::VOk(ref x) => write!(f, "OK: {}", x),
-            &Validation::VErr(ref errs) => write!(f, "Errors: {:?}", errs),
-
+            Validation::VOk(x) => write!(f, "OK: {}", x),
+            Validation::VErr(errs) => write!(f, "Errors: {:?}", errs),
         }
     }
 }
@@ -21,10 +20,9 @@ impl<T,E> Validation<T,E> {
         Err(e) => Validation::VErr(vec![e])
     }}
 
-    pub fn is_ok(&self) -> bool { match self {
-        &Validation::VOk(_) => true,
-        _ => false
-    }}
+    pub fn is_ok(&self) -> bool {
+        matches!(self, Validation::VOk(_))
+    }
 
     pub fn is_error(&self) -> bool { !self.is_ok() }
 
@@ -36,12 +34,11 @@ impl<T,E> Validation<T,E> {
     }
 
     pub fn map_err<F, O>(self, op: O) -> Validation<T, F>
-        where O: Fn(&E) -> F { match self {
-        Validation::VOk(ok) => Validation::VOk(ok),
-        Validation::VErr(err) => Validation::VErr(
-            err.iter().map(|e| op(e)).collect::<Vec<F>>()
-        )
-    }
+        where O: Fn(&E) -> F {
+        match self {
+            Validation::VOk(ok) => Validation::VOk(ok),
+            Validation::VErr(err) => Validation::VErr(err.iter().map(op).collect()),
+        }
     }
 
     pub fn and_then<U, F>(self, op: F) -> Validation<U, E>
@@ -51,17 +48,16 @@ impl<T,E> Validation<T,E> {
     }
     }
 
-    pub fn append<U>(self, r2: Validation<U,E>)-> Validation<(T,U),E> { match (self,r2) {
-        (Validation::VOk(o1), Validation::VOk(o2)) => Validation::VOk((o1, o2)),
-        (Validation::VOk(_), Validation::VErr(e2)) => Validation::VErr(e2),
-        (Validation::VErr(e1), Validation::VOk(_)) => Validation::VErr(e1),
-        (Validation::VErr(e1), Validation::VErr(e2)) => {
-            let mut new_errors: Vec<E> = Vec::new();
-            new_errors.extend(e1);
-            new_errors.extend(e2);
-            Validation::VErr(new_errors)
-        },
-    }}
-
+    pub fn append<U>(self, r2: Validation<U,E>) -> Validation<(T,U),E> {
+        match (self, r2) {
+            (Validation::VOk(o1), Validation::VOk(o2)) => Validation::VOk((o1, o2)),
+            (Validation::VOk(_), Validation::VErr(e2)) => Validation::VErr(e2),
+            (Validation::VErr(e1), Validation::VOk(_)) => Validation::VErr(e1),
+            (Validation::VErr(mut e1), Validation::VErr(e2)) => {
+                e1.extend(e2);
+                Validation::VErr(e1)
+            }
+        }
+    }
 }
 

@@ -17,12 +17,9 @@ pub trait Applicative<V> : Apply<V> {
 impl<T,V> Apply<V> for Option<T> {
 
     fn ap<Fun>(&self, f: <Self as HigherKindedType<Fun>>::FOutput) -> <Self as HigherKindedType<V>>::FOutput where Fun: Fn(&<Self as HigherKindedType<V>>::Current) -> V {
-        match *self {
-            Some(ref x) => match f {
-                Some(fs) => Some(fs(x)),
-                None => None
-            },
-            None => None
+        match (self, f) {
+            (Some(x), Some(fs)) => Some(fs(x)),
+            _ => None,
         }
     }
 
@@ -37,12 +34,12 @@ impl<T,V> Applicative<V> for Option<T> {
 
 impl<T,V,E : Clone> Apply<V> for Result<T,E> {
     fn ap<Fun>(&self, f: <Self as HigherKindedType<Fun>>::FOutput) -> <Self as HigherKindedType<V>>::FOutput where Fun: Fn(&<Self as HigherKindedType<V>>::Current) -> V {
-        match *self {
-            Ok(ref x) => match f {
+        match self {
+            Ok(x) => match f {
                 Ok(fs) => Ok(fs(x)),
-                Err(ref e) => Err(e.clone())
+                Err(e) => Err(e),
             },
-            Err(ref e) => Err(e.clone())
+            Err(e) => Err(e.clone()),
         }
     }
 }
@@ -57,10 +54,7 @@ impl<T,V,E : Clone> Applicative<V> for Result<T,E> {
 impl<T,V> Apply<V> for Vec<T> {
 
     fn ap<Fun>(&self, f: <Self as HigherKindedType<Fun>>::FOutput) -> <Self as HigherKindedType<V>>::FOutput where Fun: Fn(&<Self as HigherKindedType<V>>::Current) -> V {
-        self.iter().zip(f).map(|x| {
-            let (e,f) = x;
-            f(e)
-        }).collect()
+        self.iter().zip(f).map(|(e, f)| f(e)).collect()
     }
 
 }
@@ -75,9 +69,7 @@ impl<T,V> Applicative<V> for Vec<T> {
 impl<T,V> Apply<V> for Box<T> {
 
     fn ap<Fun>(&self, f: <Self as HigherKindedType<Fun>>::FOutput) -> <Self as HigherKindedType<V>>::FOutput where Fun: Fn(&<Self as HigherKindedType<V>>::Current) -> V {
-//        let x = *self;
-        let ff = *f;
-        Box::new(ff(self))
+        Box::new((*f)(self))
     }
 
 }

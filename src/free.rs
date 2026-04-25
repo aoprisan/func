@@ -27,12 +27,13 @@ pub enum Free<A> {
 
 
 
+#[allow(dead_code)]
 impl<A> Free<A> {
-    fn flat_map_rc(self, f: Rc<dyn Fn(A) -> Free<A>>) -> Free<A>   {
+    fn flat_map_rc(self, f: Rc<dyn Fn(A) -> Free<A>>) -> Free<A> {
         Free::FlatMap(Box::new(self), f)
     }
 
-    fn flat_map<F>(self, f: F) -> Free<A> where F: Fn(A) -> Free<A> + 'static  {
+    fn flat_map<F>(self, f: F) -> Free<A> where F: Fn(A) -> Free<A> + 'static {
         self.flat_map_rc(Rc::new(f))
     }
 }
@@ -41,20 +42,12 @@ pub fn run<A: 'static>(c: Free<A>) -> A {
     tail_rec(c, |free| match free {
         Free::Return(a) => RecursionState::Done(a),
         Free::Suspend(a) => RecursionState::Done(a.eval()),
-        Free::FlatMap(free, k) => {
-            let f = *free;
-            match f {
-                Free::Return(a) => RecursionState::Continue(k(a)),
-                Free::Suspend(a) => RecursionState::Continue(k(a.eval())),
-                Free::FlatMap(free2, k2) => {
-                    RecursionState::Continue(
-                        free2.flat_map_rc(
-                            Rc::new( move |a| k2(a).flat_map_rc(k.clone()))
-                        )
-                    )
-                }
-            }
-
+        Free::FlatMap(inner, k) => match *inner {
+            Free::Return(a) => RecursionState::Continue(k(a)),
+            Free::Suspend(a) => RecursionState::Continue(k(a.eval())),
+            Free::FlatMap(inner2, k2) => RecursionState::Continue(
+                inner2.flat_map_rc(Rc::new(move |a| k2(a).flat_map_rc(k.clone())))
+            ),
         }
     })
 }

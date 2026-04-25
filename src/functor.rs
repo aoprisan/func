@@ -21,8 +21,8 @@ functorize!(Vec);
 impl<T, V> Functor<V> for Option<T> {
     fn fmap<Fun>(&self, f: Fun) -> Self::FOutput where Fun: Fn(&Self::Current) -> Self::Output {
         match self {
-            &Some(ref x) => Some(f(x)),
-            &None => None,
+            Some(x) => Some(f(x)),
+            None => None,
         }
     }
 }
@@ -30,8 +30,8 @@ impl<T, V> Functor<V> for Option<T> {
 impl<T, V, E : Clone> Functor<V> for Result<T,E> {
     fn fmap<Fun>(&self, f: Fun) -> Self::FOutput where Fun: Fn(&Self::Current) -> Self::Output {
         match self {
-            &Ok(ref x) => Ok(f(x)),
-            &Err(ref e) => Err(e.clone()),
+            Ok(x) => Ok(f(x)),
+            Err(e) => Err(e.clone()),
         }
     }
 }

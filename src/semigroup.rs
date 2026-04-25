@@ -85,12 +85,8 @@ semigroup!(Vec);
 impl<A: Semigroup<T = A>> Semigroup for Box<A> {
     type T = Box<A>;
 
-
     fn add_and_own(self, t2: Self::T) -> Self::T {
-        let x = *self as A;
-        let y = *t2 as A;
-        let r = x.add_and_own(y);
-        Box::new(r)
+        Box::new((*self).add_and_own(*t2))
     }
 }
 

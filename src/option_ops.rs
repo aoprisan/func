@@ -26,9 +26,9 @@ pub trait OptionOps<T,V> {
 
 impl<T,V> OptionOps<T,V> for Option<T> {
     fn fold<F>(&self, z: V, nz: F) -> V where F: FnOnce(&T)-> V {
-        match self.as_ref() {
-            Some(ref x) => nz(x),
-            None => z
+        match self {
+            Some(x) => nz(x),
+            None => z,
         }
     }
 }
